@@ -3,6 +3,15 @@
  */
 package org.example;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.advent.MainApp;
 import org.advent.Utils;
 
@@ -11,16 +20,83 @@ public class App implements MainApp{
     
 
     public static void main(String[] args) throws Exception {
-        Utils.DEBUG = true;
+        Utils.DEBUG = false;
         Utils.main(new App());
     }
     
     
     public void run() throws Exception {
-        
-        Utils.start("day4", "data0.in", line->{
-            Utils.debug(line);
+        ScratchCards game = new ScratchCards();
+
+        Utils.start("day4", "data1.in", line->{
+            
+            game.add(Card.parse(line));
         });
+
+        Utils.debug(game.cards);
+
+        System.out.println("Score: " + game.score());
+    }
+
+
+    static class ScratchCards{
+        List<Card> cards = new ArrayList<>();
+
+        public void add(Card card){
+            this.cards.add(card);
+        }
+        public int score(){
+            return this.cards.stream().map(Card::score).reduce(0, Integer::sum);
+        }
+    }
+    
+    static class Card {
+
+        public Card(int id) {
+            this.id = id;
+        }
+        final int id;
+        Set<Integer> winningNumbers;
+        Set<Integer> actualNumbers;
+        
+        
+        public int calculateActualWinningNumber(){
+            Set<Integer> intersection = new HashSet<>(actualNumbers);
+            intersection.retainAll(winningNumbers);
+            return intersection.size();
+        }
+
+        public int score(){
+            int winningNumbersCount = calculateActualWinningNumber();
+            return winningNumbersCount == 0 ? 0 : (int) Math.pow(2, winningNumbersCount-1);
+        }
+
+
+        
+        public static Card parse(String line) {
+            int id = Integer.parseInt(line.substring(line.indexOf(" "), line.indexOf(":")).trim());
+            Card card = new Card(id);
+            String[] numbers = line.substring(line.indexOf(":")+1).split("\\|");
+
+            card.winningNumbers = parseNumbers(numbers[0]);
+            card.actualNumbers = parseNumbers(numbers[1]);
+
+            return card;
+        }
+
+        static Set<Integer> parseNumbers(String line){
+            return Stream.of(line.split(" ")).map(String::trim).filter(Predicate.not(String::isBlank)).map(Integer::valueOf).collect(Collectors.toSet());
+        }
+
+
+
+
+        @Override
+        public String toString() {
+            return "Card [id=" + id + ", winningNumbers=" + winningNumbers + ", actualNumbers=" + actualNumbers + "]";
+        }
+
+        
     }
 }
 

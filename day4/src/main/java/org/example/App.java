@@ -30,20 +30,38 @@ public class App implements MainApp{
 
         Utils.start("day4", "data1.in", line->{
             
-            game.add(Card.parse(line));
+            game.add(line);
         });
 
         Utils.debug(game.cards);
 
-        System.out.println("Score: " + game.score());
+        game.applyRules();
+
+        System.out.println("Score: " + game.cards.size());
     }
 
 
     static class ScratchCards{
         List<Card> cards = new ArrayList<>();
 
-        public void add(Card card){
+        public void add(String lineCard){
+            Card card = Card.parse(lineCard);
+            if (!this.cards.isEmpty()){
+                this.cards.get(this.cards.size()-1).next = card;
+            }
             this.cards.add(card);
+        }
+        public void applyRules(){
+            for (int i = 0; i < cards.size(); i++) {
+                Card c = cards.get(i);
+                int nbWinning = c.calculateActualWinningNumber();
+                Card next = c.next;
+                while (nbWinning > 0) {
+                    this.cards.add(next);
+                    next = next.next;
+                    nbWinning--;
+                }
+            }
         }
         public int score(){
             return this.cards.stream().map(Card::score).reduce(0, Integer::sum);
@@ -56,6 +74,7 @@ public class App implements MainApp{
             this.id = id;
         }
         final int id;
+        private Card next;
         Set<Integer> winningNumbers;
         Set<Integer> actualNumbers;
         

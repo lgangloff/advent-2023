@@ -27,6 +27,17 @@ public class Utils {
         System.out.println(String.format("Reading file %s in %d ms.", file, ChronoUnit.MILLIS.between(startAt, endAt)));
     }
 
+    
+    public static void startByReader(String project, String file, Consumer<BufferedReader> consumer) throws FileNotFoundException, IOException{
+        LocalDateTime startAt  = LocalDateTime.now();
+        try (BufferedReader br = new BufferedReader(new FileReader(project+"/src/main/resources/" + file))) {
+            consumer.accept(br);
+        }
+        LocalDateTime endAt = LocalDateTime.now();
+
+        System.out.println(String.format("Reading file %s in %d ms.", file, ChronoUnit.MILLIS.between(startAt, endAt)));
+    }
+
     public static void main(MainApp app) throws Exception {        
         LocalDateTime startAt  = LocalDateTime.now();
 
